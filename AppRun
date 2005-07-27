@@ -24,12 +24,16 @@ class Field(g.HBox):
 class ResBox(rox.Dialog):
 	def __init__(self):
 		rox.Dialog.__init__(self, _("Screen Resolution"))
+		self.add_button(g.STOCK_HELP, g.RESPONSE_HELP)
 		self.add_button(g.STOCK_CLOSE, g.RESPONSE_CANCEL)
 		self.add_button(g.STOCK_APPLY, g.RESPONSE_OK)
 		self.set_default_response(g.RESPONSE_OK)
 		self.set_has_separator(False)
 		def resp(d, r):
-			if r == g.RESPONSE_OK:
+			if r == g.RESPONSE_HELP:
+				from rox import filer
+				filer.open_dir(os.path.join(rox.app_dir, 'Help'))
+			elif r == g.RESPONSE_OK:
 				current = self.settings[self.resolutions.get_history()]
 				xrandr.set_mode(current)
 				self.hide()
