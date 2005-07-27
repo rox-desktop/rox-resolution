@@ -52,7 +52,6 @@ def get_settings():
 	return (current, settings)
 
 def set_mode(setting):
-	print setting
 	cerr, cin = popen2.popen4([xrandr, '-s', str(setting.n)])
 	cin.close()
 	errors = cerr.read()
