@@ -13,7 +13,7 @@ XFree86 and X.org) come with this program. If you don't have it, try upgrading
 your X server.
 
 Note that there is another, older, mechanism for changing resolution, often
-activated by pressing <Ctrl>+<Shirt>+<Keypad Plus>. This still changes the
+activated by pressing <Ctrl>+<Alt>+<Keypad Plus>. This still changes the
 resolution, but your desktop remains the same logical size (i.e. you 'zoom in'
 to the screen and must pan around to see your panel, etc).
 
@@ -40,3 +40,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 Please report any bugs to the mailing list:
 
 	http://rox.sourceforge.net/phpwiki/index.php/MailingLists
+
+
+Credits
+~~~~~~~
+The icon is from GNOME.
