@@ -30,10 +30,10 @@ class ResBox(rox.Dialog):
 		self.set_default_response(g.RESPONSE_OK)
 		self.set_has_separator(False)
 		def resp(d, r):
-			if r == g.RESPONSE_HELP:
+			if r == int(g.RESPONSE_HELP):
 				from rox import filer
 				filer.open_dir(os.path.join(rox.app_dir, 'Help'))
-			elif r == g.RESPONSE_OK:
+			elif r == int(g.RESPONSE_OK):
 				current = self.settings[self.resolutions.get_history()]
 				xrandr.set_mode(current)
 				self.hide()
