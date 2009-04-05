@@ -4,10 +4,10 @@
 	<Summary xml:lang="de">Bildschirmauflösung wechseln</Summary>
 	<About xml:lang="en">
 		<Purpose>Change screen resolution</Purpose>
-		<Version>0.2</Version>
+		<Version>0.3</Version>
 		<Authors>Guido Schimmels &lt;__guido__@web.de&gt; and Thomas Leonard</Authors>
 		<License>GPL</License>
-		<Homepage>http://roxos.sunsite.dk/dev-contrib/guido/Configure/</Homepage>
+		<Homepage>http://roscidus.com/desktop/Resolution</Homepage>
 	</About>
 	<About xml:lang="de">
 		<Purpose  label="Funktion">Bildschirmauflösung wechseln</Purpose>
