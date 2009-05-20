@@ -46,11 +46,10 @@ class NewSetting(Setting):
 		self.res = []
 		self.current_r = None
 		for r in bits[1:]:
+			res = float(r.strip('*+'))
 			if r.endswith('*'):
-				self.current_r = float(r[:-1])
-				self.res.append(self.current_r)
-			else:
-				self.res.append(float(r))
+				self.current_r = res
+			self.res.append(res)
 	
 def get_settings():
 	cout, cin = popen2.popen2([xrandr])
