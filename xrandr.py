@@ -1,4 +1,5 @@
 import os, popen2, sys
+from collections import defaultdict
 import rox
 
 paths = os.environ.get('PATH', '/bin:/usr/bin').split(':')
@@ -15,13 +16,15 @@ else:
 		  'system. Try upgrading your X server.'))
 
 class Setting:
-	def __init__(self, line):
+	def __init__(self, output, line):
 		bits = [b for b in line.split() if b]
+		self.output = output
 		self.n = int(bits[0])
 		self.width = int(bits[1])
 		self.height = int(bits[3])
 		self.phy_width = bits[5]
 		self.phy_height = bits[7]
+		self.enabled = self.phy_width != 0
 		self.res = []
 		self.current_r = None
 		for r in bits[9:]:
@@ -35,18 +38,23 @@ class Setting:
 		return '%s x %s' % (self.width, self.height)
 
 class NewSetting(Setting):
-	def __init__(self, line, phy_width, phy_height):
+	def __init__(self, output, line, phy_width, phy_height):
 		bits = [b for b in line.split() if b]
 		self.n = -1
+		self.output = output
 		self.width, self.height = bits[0].split('x')
 		self.width = int(self.width)
 		self.height = int(self.height)
 		self.phy_width = phy_width
 		self.phy_height = phy_height
+		self.enabled = self.phy_width != 0
 		self.res = []
 		self.current_r = None
 		for r in bits[1:]:
-			res = float(r.strip('*+'))
+			try:
+				res = float(r.strip('*+'))
+			except ValueError:
+				continue
 			if r.endswith('*'):
 				self.current_r = res
 			self.res.append(res)
@@ -54,35 +62,48 @@ class NewSetting(Setting):
 def get_settings():
 	cout, cin = popen2.popen2([xrandr])
 	cin.close()
-	settings = []
-	current = None
+	settings = defaultdict(list)
+	current = {}
 	phy_width = 0
 	phy_height = 0
+	output = ''
+	i = 0
 	for line in cout:
 		line = line.rstrip()
-		if 'mm x ' in line and line.endswith('mm'):
-			data = line.rsplit(' ', 3)
-			if data[1].endswith('mm') and data[3].endswith('mm'):
-				phy_width = data[1]
-				phy_height = data[3]
+		if 'connected' in line:
+			if 'disconnected' in line:
+				continue
+			phy_width = 0
+			phy_height = 0
+			if 'mm x ' in line and line.endswith('mm'):
+				data = line.rsplit(' ', 3)
+				if data[1].endswith('mm') and data[3].endswith('mm'):
+					phy_width = data[1]
+					phy_height = data[3]
+			output = line.split(' ')[0]
+			i += 1
 		elif line[0] in ' *' and 'x' in line:
 			try:
 				if ' x ' in line:
-					setting = Setting(line[1:])
+					setting = Setting(output, line[1:])
 				else:
-					setting = NewSetting(line, phy_width, phy_height)
-				settings.append(setting)
+					setting = NewSetting(output, line, phy_width, phy_height)
+				settings[i, output].append(setting)
 				if '*' in line:
-					current = setting
+					current[output] = setting
 			except Exception, ex:
 				print >>sys.stderr, "Failed to parse line '%s':\n%s" % \
 					(line.strip(), str(ex))
 	cout.close()
 	return (current, settings)
 
-def set_mode(setting):
-	cerr, cin = popen2.popen4([xrandr, '-s', '%dx%d' %
-		(setting.width, setting.height)])
+def set_mode(setting, enabled):
+	cmd = [xrandr, '--output', setting.output]
+	if enabled:
+		cmd += ['--mode', '%dx%d' % (setting.width, setting.height)]
+	else:
+		cmd.append('--off')
+	cerr, cin = popen2.popen4(cmd)
 	cin.close()
 	errors = cerr.read()
 	if errors:

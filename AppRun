@@ -34,8 +34,14 @@ class ResBox(rox.Dialog):
 				from rox import filer
 				filer.open_dir(os.path.join(rox.app_dir, 'Help'))
 			elif r == int(g.RESPONSE_OK):
-				current = self.settings[self.resolutions.get_history()]
-				xrandr.set_mode(current)
+				for (i, output), settings in self.settings.iteritems():
+					current = settings[self.resolutions[output].get_history()]
+					enabled = self.enabled[output].get_active()
+					xrandr.set_mode(current, enabled)
+				current, self.settings = xrandr.get_settings()
+				for output, setting in current.iteritems():
+					phy_size = '%s x %s' % (setting.phy_width, setting.phy_height)
+					self.physical_size[output].value.set_text(phy_size)
 				self.hide()
 				self.present()
 			else:
@@ -44,48 +50,79 @@ class ResBox(rox.Dialog):
 
 		sg = g.SizeGroup(g.SIZE_GROUP_BOTH)
 
-		vbox = g.VBox(False, 4)
-		self.vbox.pack_start(vbox, True, True, 0)
-		vbox.set_border_width(5)
+		outputs_hbox = g.HBox(False, 4)
+		self.vbox.pack_start(outputs_hbox, True, True, 0)
 
-		hbox = g.HBox(False, 4)
-		vbox.pack_start(hbox, False, True, 0)
-		label = g.Label(_('Resolution: '))
-		sg.add_widget(label)
-		label.set_alignment(1, 0.5)
-		hbox.pack_start(label, False, True, 0)
-		self.resolutions = g.OptionMenu()
-		hbox.pack_start(self.resolutions, True, True, 0)
-
-		menu = g.Menu()
-		self.resolutions.set_menu(menu)
 		current, self.settings = xrandr.get_settings()
-		for s in self.settings:
-			item = g.MenuItem(str(s))
-			menu.append(item)
-			item.show()
-		self.resolutions.connect('changed', self.show_details)
 
-		self.refresh_rates = Field(_('Refresh rates: '), sg)
-		vbox.pack_start(self.refresh_rates, False, True, 0)
+		self.resolutions = {}
+		self.refresh_rates = {}
+		self.physical_size = {}
+		self.enabled = {}
 
-		self.physical_size = Field(_('Physical size: '), sg)
-		vbox.pack_start(self.physical_size, False, True, 0)
+		for (i, output), settings in sorted(self.settings.iteritems(),
+									key=lambda x: x[0][0]):
+			frame = g.Frame(output)
+			vbox = g.VBox(False, 4)
+			vbox.set_border_width(5)
+			frame.add(vbox)
 
-		if current is not None:
-			i = self.settings.index(current)
-		else:
-			i = 0
-		self.resolutions.set_history(i)
+			outputs_hbox.pack_start(frame, False, True, 0)
+			hbox = g.HBox(False, 4)
+			vbox.pack_start(hbox, False, True, 0)
+			label = g.Label(_('Resolution: '))
+			sg.add_widget(label)
+			label.set_alignment(1, 0.5)
+			hbox.pack_start(label, False, True, 0)
+			self.resolutions[output] = g.OptionMenu()
+			hbox.pack_start(self.resolutions[output], True, True, 0)
+
+			menu = g.Menu()
+			self.resolutions[output].set_menu(menu)
+			for s in settings:
+				item = g.MenuItem(str(s))
+				menu.append(item)
+				item.show()
+			self.resolutions[output].connect('changed', self.show_details,
+											 i, output)
+
+			self.enabled[output] = g.CheckButton(_('Enabled'))
+			self.enabled[output].set_active(
+				output in current and current[output].enabled)
+			self.enabled[output].connect('toggled', self.enabled_toggled, output)
+			vbox.pack_start(self.enabled[output])
+
+			self.refresh_rates[output] = Field(_('Refresh rates: '), sg)
+			vbox.pack_start(self.refresh_rates[output], False, True, 0)
+
+			self.physical_size[output] = Field(_('Physical size: '), sg)
+			vbox.pack_start(self.physical_size[output], False, True, 0)
+
+			try:
+				i = settings.index(current[output])
+			except KeyError:
+				i = 0
+			self.resolutions[output].set_history(i)
 
 		self.vbox.show_all()
 
-	def show_details(self, resolutions):
-		current = self.settings[resolutions.get_history()]
+	def enabled_toggled(self, checkbutton, output):
+		enabled_checkbuttons = [
+			button for button in self.enabled.itervalues()
+			if button.get_active()
+		]
+		if len(enabled_checkbuttons) == 1:
+			enabled_checkbuttons[0].set_sensitive(False)
+		else:
+			for checkbutton in self.enabled.itervalues():
+				checkbutton.set_sensitive(True)
+
+	def show_details(self, resolutions, i, output):
+		current = self.settings[i, output][resolutions.get_history()]
 		rates = ', '.join(['%d Hz' % r for r in current.res])
 		phy_size = '%s x %s' % (current.phy_width, current.phy_height)
-		self.physical_size.value.set_text(phy_size)
-		self.refresh_rates.value.set_text(rates)
+		self.physical_size[output].value.set_text(phy_size)
+		self.refresh_rates[output].value.set_text(rates)
 	
 
 try:
