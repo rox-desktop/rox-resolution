@@ -88,7 +88,7 @@ def get_settings():
 					setting = Setting(output, line[1:])
 				else:
 					setting = NewSetting(output, line, phy_width, phy_height)
-				settings[i, output].append(setting)
+				settings[(i, output)].append(setting)
 				if '*' in line:
 					current[output] = setting
 			except Exception, ex:
@@ -97,12 +97,18 @@ def get_settings():
 	cout.close()
 	return (current, settings)
 
-def set_mode(setting, enabled):
-	cmd = [xrandr, '--output', setting.output]
-	if enabled:
-		cmd += ['--mode', '%dx%d' % (setting.width, setting.height)]
-	else:
-		cmd.append('--off')
+def settings_to_args(settings):
+	args = []
+	for setting in settings:
+		args += ['--output', setting.output]
+		if setting.enabled:
+			args += ['--mode', '%dx%d' % (setting.width, setting.height)]
+		else:
+			args.append('--off')
+	return args
+
+def set_modes(settings):
+	cmd = [xrandr] + settings_to_args(settings)
 	cerr, cin = popen2.popen4(cmd)
 	cin.close()
 	errors = cerr.read()

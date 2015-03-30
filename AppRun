@@ -3,9 +3,13 @@ import findrox; findrox.version(1, 9, 13)
 
 import os
 import rox
+from rox.settings import Setting, Settings
 g = rox.g
 
 __builtins__._ = rox.i18n.translation(os.path.join(rox.app_dir, 'Messages'))
+
+settings = Settings()
+xrandr_setting = Setting('ROX/XRandRArgs', '', settings)
 
 class Field(g.HBox):
 	def __init__(self, name, sg):
@@ -34,10 +38,13 @@ class ResBox(rox.Dialog):
 				from rox import filer
 				filer.open_dir(os.path.join(rox.app_dir, 'Help'))
 			elif r == int(g.RESPONSE_OK):
-				for (i, output), settings in self.settings.iteritems():
-					current = settings[self.resolutions[output].get_history()]
-					enabled = self.enabled[output].get_active()
-					xrandr.set_mode(current, enabled)
+				current_settings = [
+					settings[self.resolutions[output].get_history()]
+					for (i, output), settings in self.settings.iteritems()
+				]
+				xrandr.set_modes(current_settings)
+				xrandr_setting._set(' '.join(
+					xrandr.settings_to_args(current_settings)))
 				current, self.settings = xrandr.get_settings()
 				for output, setting in current.iteritems():
 					phy_size = '%s x %s' % (setting.phy_width, setting.phy_height)
@@ -83,13 +90,12 @@ class ResBox(rox.Dialog):
 				item = g.MenuItem(str(s))
 				menu.append(item)
 				item.show()
-			self.resolutions[output].connect('changed', self.show_details,
-											 i, output)
+			self.resolutions[output].connect('changed', self.show_details, i, output)
 
 			self.enabled[output] = g.CheckButton(_('Enabled'))
 			self.enabled[output].set_active(
 				output in current and current[output].enabled)
-			self.enabled[output].connect('toggled', self.enabled_toggled, output)
+			self.enabled[output].connect('toggled', self.enabled_toggled, i, output)
 			vbox.pack_start(self.enabled[output])
 
 			self.refresh_rates[output] = Field(_('Refresh rates: '), sg)
@@ -106,7 +112,9 @@ class ResBox(rox.Dialog):
 
 		self.vbox.show_all()
 
-	def enabled_toggled(self, checkbutton, output):
+	def enabled_toggled(self, checkbutton, i, output):
+		for setting in self.settings[i, output]:
+			setting.enabled = checkbutton.get_active()
 		enabled_checkbuttons = [
 			button for button in self.enabled.itervalues()
 			if button.get_active()
