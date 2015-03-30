@@ -97,6 +97,7 @@ class ResBox(rox.Dialog):
 				output in current and current[output].enabled)
 			self.enabled[output].connect('toggled', self.enabled_toggled, i, output)
 			vbox.pack_start(self.enabled[output])
+			self.enabled_toggled(self.enabled[output], i, output)
 
 			self.refresh_rates[output] = g.OptionMenu()
 			vbox.pack_start(self.refresh_rates[output])
