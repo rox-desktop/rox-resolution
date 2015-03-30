@@ -98,8 +98,13 @@ class ResBox(rox.Dialog):
 			self.enabled[output].connect('toggled', self.enabled_toggled, i, output)
 			vbox.pack_start(self.enabled[output])
 
-			self.refresh_rates[output] = Field(_('Refresh rates: '), sg)
-			vbox.pack_start(self.refresh_rates[output], False, True, 0)
+			self.refresh_rates[output] = g.OptionMenu()
+			vbox.pack_start(self.refresh_rates[output])
+			self.refresh_rates[output].connect('changed',
+									  self.refresh_rate_changed, i, output)
+
+			menu = g.Menu()
+			self.refresh_rates[output].set_menu(menu)
 
 			self.physical_size[output] = Field(_('Physical size: '), sg)
 			vbox.pack_start(self.physical_size[output], False, True, 0)
@@ -111,6 +116,10 @@ class ResBox(rox.Dialog):
 			self.resolutions[output].set_history(i)
 
 		self.vbox.show_all()
+
+	def refresh_rate_changed(self, refresh_rates, i, output):
+		current = self.settings[i, output][self.resolutions[output].get_history()]
+		current.current_r = current.res[refresh_rates.get_history()]
 
 	def enabled_toggled(self, checkbutton, i, output):
 		for setting in self.settings[i, output]:
@@ -127,10 +136,18 @@ class ResBox(rox.Dialog):
 
 	def show_details(self, resolutions, i, output):
 		current = self.settings[i, output][resolutions.get_history()]
-		rates = ', '.join(['%d Hz' % r for r in current.res])
 		phy_size = '%s x %s' % (current.phy_width, current.phy_height)
 		self.physical_size[output].value.set_text(phy_size)
-		self.refresh_rates[output].value.set_text(rates)
+		menu = g.Menu()
+		self.refresh_rates[output].set_menu(menu)
+		for refresh_rate in current.res:
+			item = g.MenuItem('%s Hz' % refresh_rate)
+			menu.append(item)
+			item.show()
+		self.refresh_rates[output].set_history(
+			current.res.index(current.current_r)
+			if current.current_r is not None else 0
+		)
 	
 
 try:

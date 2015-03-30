@@ -105,6 +105,8 @@ def settings_to_args(settings):
 			args += ['--mode', '%dx%d' % (setting.width, setting.height)]
 		else:
 			args.append('--off')
+		if setting.current_r is not None:
+			args += ['--rate', str(setting.current_r)]
 	return args
 
 def set_modes(settings):
