@@ -25,11 +25,14 @@ class Field(g.HBox):
 		frame.add(self.value)
 		self.value.set_padding(2, 2)
 
+RESPONSE_REFRESH = 1000
+
 class ResBox(rox.Dialog):
 	def __init__(self):
 		rox.Dialog.__init__(self, _("Screen Resolution"))
 		self.add_button(g.STOCK_HELP, g.RESPONSE_HELP)
 		self.add_button(g.STOCK_CLOSE, g.RESPONSE_CANCEL)
+		self.add_button(g.STOCK_REFRESH, RESPONSE_REFRESH)
 		self.add_button(g.STOCK_APPLY, g.RESPONSE_OK)
 		self.set_default_response(g.RESPONSE_OK)
 		self.set_has_separator(False)
@@ -51,6 +54,9 @@ class ResBox(rox.Dialog):
 					self.physical_size[output].value.set_text(phy_size)
 				self.hide()
 				self.present()
+			elif r == RESPONSE_REFRESH:
+				self.destroy()
+				ResBox().show()
 			else:
 				d.destroy()
 		self.connect('response', resp)
