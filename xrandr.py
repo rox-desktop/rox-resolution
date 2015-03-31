@@ -132,7 +132,11 @@ def get_settings(xrandr_args):
 				# Invalid args: --rate not followed by valid rate string.
 				break
 			else:
-				settings[output].current.current_r = rate
+				try:
+					settings[output].current.current_r = rate
+				except (KeyError, AttributeError):
+					# Output disabled.
+					continue
 	return settings
 
 def settings_to_args(output2settings):
