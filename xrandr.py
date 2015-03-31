@@ -23,13 +23,16 @@ class Setting:
 		self.height = int(self.height)
 		self.res = []
 		self.current_r = None
+		self.preferred_r = None
 		for r in bits[1:]:
 			try:
 				res = float(r.strip('*+'))
 			except ValueError:
 				continue
-			if r.endswith('*'):
+			if '*' in r:
 				self.current_r = res
+			if '+' in r:
+				self.preferred_r = res
 			self.res.append(res)
 	
 	def __str__(self):

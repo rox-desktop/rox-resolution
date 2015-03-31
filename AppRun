@@ -121,6 +121,14 @@ class ResBox(rox.Dialog):
 
 			menu = g.Menu()
 			self.refresh_rates[output].set_menu(menu)
+			i = 0
+			current = settings.current
+			if current is not None:
+				if current.current_r is not None:
+					i = current.res.index(current.current_r)
+				if current.preferred_r is not None:
+					i = current.res.index(current.preferred_r)
+			self.refresh_rates[output].set_history(i)
 
 			self.physical_size[output] = Field(_('Physical size: '), sg)
 			vbox.pack_start(self.physical_size[output], False, True, 0)
