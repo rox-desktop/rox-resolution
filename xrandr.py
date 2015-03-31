@@ -26,6 +26,8 @@ class Setting:
 		self.phy_height = bits[7]
 		self.enabled = self.phy_width != 0
 		self.res = []
+		self.other_output = None
+		self.direction = 'same-as'
 		self.current_r = None
 		for r in bits[9:]:
 			if r.startswith('*'):
@@ -49,6 +51,8 @@ class NewSetting(Setting):
 		self.phy_height = phy_height
 		self.enabled = self.phy_width != 0
 		self.res = []
+		self.other_output = None
+		self.direction = 'same-as'
 		self.current_r = None
 		for r in bits[1:]:
 			try:
@@ -67,7 +71,7 @@ def get_settings():
 	phy_width = 0
 	phy_height = 0
 	output = ''
-	i = 0
+	i = -1
 	for line in cout:
 		line = line.rstrip()
 		if 'connected' in line:
@@ -107,6 +111,9 @@ def settings_to_args(settings):
 			args.append('--off')
 		if setting.current_r is not None:
 			args += ['--rate', str(setting.current_r)]
+		if setting.other_output is not None:
+			args += ['--%s' % setting.direction, setting.other_output]
+
 	return args
 
 def set_modes(settings):
