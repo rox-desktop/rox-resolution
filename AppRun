@@ -125,12 +125,6 @@ class ResBox(rox.Dialog):
 			self.physical_size[output] = Field(_('Physical size: '), sg)
 			vbox.pack_start(self.physical_size[output], False, True, 0)
 
-			try:
-				i = settings.index(settings.current)
-			except (ValueError, KeyError):
-				i = 0
-			self.resolutions[output].set_history(i)
-
 			if settings.output_index > 0:
 				hbox = g.HBox(False, 4)
 				vbox.pack_start(hbox, False, True, 0)
@@ -166,6 +160,15 @@ class ResBox(rox.Dialog):
 				)
 				self.other_outputs[output].connect("changed", self.other_output_selected,
 									   settings)
+
+			try:
+				i = settings.index(settings.current)
+			except (ValueError, KeyError):
+				try:
+					i = settings.index(settings.preferred)
+				except (ValueError, KeyError):
+					i = 0
+			self.resolutions[output].set_history(i)
 
 		self.vbox.show_all()
 

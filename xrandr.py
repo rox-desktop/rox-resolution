@@ -43,6 +43,7 @@ class Settings(list):
 		self.phy_width = phy_width
 		self.phy_height = phy_height
 		self.current = None
+		self.preferred = None
 		self.enabled = self.phy_width != 0
 		self.direction = 'same-as'
 		self.other_output = None
@@ -74,6 +75,8 @@ def get_settings(xrandr_args):
 				settings[output].append(setting)
 				if '*' in line:
 					settings[output].current = setting
+				if '+' in line:
+					settings[output].preferred = setting
 			except Exception, ex:
 				print >>sys.stderr, "Failed to parse line '%s':\n%s" % \
 					(line.strip(), str(ex))
