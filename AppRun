@@ -72,13 +72,16 @@ class ResBox(rox.Dialog):
 		self.directions = {}
 		self.other_outputs = {}
 		self.other_output_strings = {}
+		self.settings_vboxes = {}
 
 		for output, settings in sorted(self.settings.iteritems(),
 									 key=lambda x: x[1].output_index):
 			frame = g.Frame(output)
-			vbox = g.VBox(False, 4)
+			self.settings_vboxes[output] = vbox = g.VBox(False, 4)
 			vbox.set_border_width(5)
-			frame.add(vbox)
+			vbox2 = g.VBox(False, 4)
+			frame.add(vbox2)
+			vbox2.pack_end(vbox)
 
 			if len(self.settings) > 1:
 				self.enabled[output] = g.CheckButton(_('Enabled'))
@@ -88,7 +91,7 @@ class ResBox(rox.Dialog):
 				]
 				self.enabled[output].set_sensitive(not settings.enabled or len(enabled_settings) > 1)
 				self.enabled[output].connect('toggled', self.enabled_toggled, settings)
-				vbox.pack_start(self.enabled[output])
+				vbox2.pack_start(self.enabled[output])
 
 			outputs_hbox.pack_start(frame, False, True, 0)
 			hbox = g.HBox(False, 4)
@@ -178,6 +181,8 @@ class ResBox(rox.Dialog):
 					i = 0
 			self.resolutions[output].set_history(i)
 
+			vbox.set_sensitive(settings.enabled)
+
 		self.vbox.show_all()
 
 	def direction_changed(self, directions, settings):
@@ -203,6 +208,8 @@ class ResBox(rox.Dialog):
 		else:
 			for checkbutton in self.enabled.itervalues():
 				checkbutton.set_sensitive(True)
+
+		self.settings_vboxes[settings.output].set_sensitive(settings.enabled)
 
 	def show_details(self, resolutions, settings):
 		settings.current = current = settings[resolutions.get_history()]
