@@ -28,7 +28,10 @@ class Field(g.HBox):
 RESPONSE_REFRESH = 1000
 
 other_direction = {0: 0, 1: 2, 2: 1, 3: 4, 4: 3}
-direction_strings = {0: 'same-as', 1: 'left-of', 2: 'right-of', 3: 'above', 4: 'below'}
+direction_strings = {
+	0: 'same-as', 1: 'left-of', 2: 'right-of', 3: 'above', 4: 'below',
+	'same-as': 0, 'left-of': 1, 'right-of': 2, 'above': 3, 'below': 4
+}
 
 class ResBox(rox.Dialog):
 	def __init__(self):
@@ -44,29 +47,10 @@ class ResBox(rox.Dialog):
 				from rox import filer
 				filer.open_dir(os.path.join(rox.app_dir, 'Help'))
 			elif r == int(g.RESPONSE_OK):
-				current_settings = [
-					settings[self.resolutions[output].get_history()]
-					for (i, output), settings in self.settings.iteritems()
-				]
-				xrandr.set_modes(current_settings)
-				xrandr_setting._set(' '.join(
-					xrandr.settings_to_args(current_settings)))
-				current, self.settings = xrandr.get_settings()
-				for output, setting in current.iteritems():
-					phy_size = '%s x %s' % (setting.phy_width, setting.phy_height)
-					self.physical_size[output].value.set_text(phy_size)
-				for (i, output), settings in self.settings.iteritems():
-					if i == 0:
-					    continue
-					for other_output in self.other_output_strings[output]:
-						for setting in settings:
-							if setting.other_output is None:
-								setting.other_output = other_output
-					direction = self.directions[output].get_history()
-					for setting in settings:
-						setting.direction = direction_strings[direction]
-				self.hide()
-				self.present()
+				xrandr.set_modes(self.settings)
+				xrandr_setting._set(' '.join(xrandr.settings_to_args(self.settings)))
+				self.destroy()
+				ResBox().show()
 			elif r == RESPONSE_REFRESH:
 				self.destroy()
 				ResBox().show()
@@ -79,7 +63,7 @@ class ResBox(rox.Dialog):
 		outputs_hbox = g.HBox(False, 4)
 		self.vbox.pack_start(outputs_hbox, True, True, 0)
 
-		current, self.settings = xrandr.get_settings()
+		self.settings = xrandr.get_settings(xrandr_setting.value)
 
 		self.resolutions = {}
 		self.refresh_rates = {}
@@ -89,8 +73,8 @@ class ResBox(rox.Dialog):
 		self.other_outputs = {}
 		self.other_output_strings = {}
 
-		for (output_index, output), settings in sorted(self.settings.iteritems(),
-									key=lambda x: x[0][0]):
+		for output, settings in sorted(self.settings.iteritems(),
+									 key=lambda x: x[1].output_index):
 			frame = g.Frame(output)
 			vbox = g.VBox(False, 4)
 			vbox.set_border_width(5)
@@ -98,10 +82,12 @@ class ResBox(rox.Dialog):
 
 			if len(self.settings) > 1:
 				self.enabled[output] = g.CheckButton(_('Enabled'))
-				self.enabled[output].set_active(
-					output in current and current[output].enabled)
-				self.enabled[output].connect('toggled', self.enabled_toggled,
-								 output_index, output)
+				self.enabled[output].set_active(settings.enabled)
+				enabled_settings = [
+					s for s in self.settings.itervalues() if s.enabled
+				]
+				self.enabled[output].set_sensitive(not settings.enabled or len(enabled_settings) > 1)
+				self.enabled[output].connect('toggled', self.enabled_toggled, settings)
 				vbox.pack_start(self.enabled[output])
 
 			outputs_hbox.pack_start(frame, False, True, 0)
@@ -120,7 +106,7 @@ class ResBox(rox.Dialog):
 				item = g.MenuItem(str(s))
 				menu.append(item)
 				item.show()
-			self.resolutions[output].connect('changed', self.show_details, output_index, output)
+			self.resolutions[output].connect('changed', self.show_details, settings)
 
 			hbox = g.HBox(False, 4)
 			vbox.pack_start(hbox, False, True, 0)
@@ -131,7 +117,7 @@ class ResBox(rox.Dialog):
 			self.refresh_rates[output] = g.OptionMenu()
 			hbox.pack_start(self.refresh_rates[output])
 			self.refresh_rates[output].connect('changed',
-									  self.refresh_rate_changed, output_index, output)
+									  self.refresh_rate_changed, settings)
 
 			menu = g.Menu()
 			self.refresh_rates[output].set_menu(menu)
@@ -140,12 +126,12 @@ class ResBox(rox.Dialog):
 			vbox.pack_start(self.physical_size[output], False, True, 0)
 
 			try:
-				i = settings.index(current[output])
-			except KeyError:
+				i = settings.index(settings.current)
+			except (ValueError, KeyError):
 				i = 0
 			self.resolutions[output].set_history(i)
 
-			if output_index > 0:
+			if settings.output_index > 0:
 				hbox = g.HBox(False, 4)
 				vbox.pack_start(hbox, False, True, 0)
 				self.directions[output] = g.OptionMenu()
@@ -158,48 +144,43 @@ class ResBox(rox.Dialog):
 				menu.append(g.MenuItem(_('Right of')))
 				menu.append(g.MenuItem(_('Above')))
 				menu.append(g.MenuItem(_('Below')))
-				self.directions[output].set_history(0)
+				self.directions[output].set_history(
+					direction_strings.get(settings.direction, 0))
 				self.directions[output].connect("changed", self.direction_changed,
-									output_index, output)
+									settings)
 
 				self.other_outputs[output] = g.OptionMenu()
 				hbox.pack_start(self.other_outputs[output])
 				menu = g.Menu()
 				self.other_outputs[output].set_menu(menu)
 				self.other_output_strings[output] = [
-					other_output for __, other_output in self.settings if other_output != output
+					other_output for other_output in self.settings if other_output != output
 				]
 				for other_output in self.other_output_strings[output]:
 					item = g.MenuItem(other_output)
 					menu.append(item)
-					for setting in settings:
-						if setting.other_output is None:
-							setting.other_output = other_output
+					if settings.other_output is None:
+						settings.other_output = other_output
 				self.other_outputs[output].set_history(0)
 				self.other_outputs[output].connect("changed", self.other_output_selected,
-									   output_index, output)
+									   settings)
 
 		self.vbox.show_all()
 
-	def direction_changed(self, directions, i, output):
+	def direction_changed(self, directions, settings):
 		direction = directions.get_history()
-		print(direction)
-		for setting in self.settings[i, output]:
-			setting.direction = direction_strings[direction]
+		settings.direction = direction_strings[direction]
 
-	def other_output_selected(self, other_outputs, i, output):
-		other_output = self.other_output_strings[output][other_outputs.get_history()]
-		print(other_output)
-		for setting in self.settings[i, output]:
-			setting.other_output = other_output
+	def other_output_selected(self, other_outputs, settings):
+		other_output = self.other_output_strings[settings.output][other_outputs.get_history()]
+		settings.other_output = other_output
 
-	def refresh_rate_changed(self, refresh_rates, i, output):
-		current = self.settings[i, output][self.resolutions[output].get_history()]
+	def refresh_rate_changed(self, refresh_rates, settings):
+		current = settings.current
 		current.current_r = current.res[refresh_rates.get_history()]
 
-	def enabled_toggled(self, checkbutton, i, output):
-		for setting in self.settings[i, output]:
-			setting.enabled = checkbutton.get_active()
+	def enabled_toggled(self, checkbutton, settings):
+		settings.enabled = checkbutton.get_active()
 		enabled_checkbuttons = [
 			button for button in self.enabled.itervalues()
 			if button.get_active()
@@ -210,17 +191,17 @@ class ResBox(rox.Dialog):
 			for checkbutton in self.enabled.itervalues():
 				checkbutton.set_sensitive(True)
 
-	def show_details(self, resolutions, i, output):
-		current = self.settings[i, output][resolutions.get_history()]
-		phy_size = '%s x %s' % (current.phy_width, current.phy_height)
-		self.physical_size[output].value.set_text(phy_size)
+	def show_details(self, resolutions, settings):
+		settings.current = current = settings[resolutions.get_history()]
+		phy_size = '%s x %s' % (settings.phy_width, settings.phy_height)
+		self.physical_size[settings.output].value.set_text(phy_size)
 		menu = g.Menu()
-		self.refresh_rates[output].set_menu(menu)
+		self.refresh_rates[settings.output].set_menu(menu)
 		for refresh_rate in current.res:
 			item = g.MenuItem('%s Hz' % refresh_rate)
 			menu.append(item)
 			item.show()
-		self.refresh_rates[output].set_history(
+		self.refresh_rates[settings.output].set_history(
 			current.res.index(current.current_r)
 			if current.current_r is not None else 0
 		)
