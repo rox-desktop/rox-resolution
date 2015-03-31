@@ -122,6 +122,8 @@ def get_settings(xrandr_args):
 					if setting.width == width and setting.height == height:
 						settings[output].current = setting
 						break
+		elif arg == '--off':
+			settings[output].enabled = False
 		elif arg == '--rate':
 			# This code relies on --mode being set before --rate,
 			# so settings[output].current is set to the setting currently
