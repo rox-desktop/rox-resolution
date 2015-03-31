@@ -1,0 +1,65 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2015-03-31 16:15+CEST\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: ENCODING\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: AppRun:39
+msgid "Screen Resolution"
+msgstr ""
+
+#: AppRun:99
+msgid "Enabled"
+msgstr ""
+
+#: AppRun:111
+msgid "Resolution: "
+msgstr ""
+
+#: AppRun:128
+msgid "Refresh Rate: "
+msgstr ""
+
+#: AppRun:148
+msgid "Physical size: "
+msgstr ""
+
+#: AppRun:155
+msgid "Position: "
+msgstr ""
+
+#: AppRun:162
+msgid "Same as"
+msgstr ""
+
+#: AppRun:163
+msgid "Left of"
+msgstr ""
+
+#: AppRun:164
+msgid "Right of"
+msgstr ""
+
+#: AppRun:165
+msgid "Above"
+msgstr ""
+
+#: AppRun:166
+msgid "Below"
+msgstr ""
+
+#: xrandr.py:165
+msgid "Errors from xrandr: '%s'"
+msgstr ""
+

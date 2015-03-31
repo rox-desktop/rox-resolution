@@ -1,0 +1,64 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2015-03-31 16:15+CEST\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Dennis Tomas <den.t@gmx.de>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: UTF-8\n"
+"Generated-By: pygettext.py 1.5\n"
+
+#: AppRun:39
+msgid "Screen Resolution"
+msgstr "Bildschirmauflösung"
+
+#: AppRun:99
+msgid "Enabled"
+msgstr "Aktiv"
+
+#: AppRun:111
+msgid "Resolution: "
+msgstr "Auflösung: "
+
+#: AppRun:128
+msgid "Refresh Rate: "
+msgstr "Bildwiederholfrequenz: "
+
+#: AppRun:148
+msgid "Physical size: "
+msgstr "Physikalische Größe: "
+
+#: AppRun:155
+msgid "Position: "
+msgstr "Position: "
+
+#: AppRun:162
+msgid "Same as"
+msgstr "Die gleiche wie"
+
+#: AppRun:163
+msgid "Left of"
+msgstr "Links von"
+
+#: AppRun:164
+msgid "Right of"
+msgstr "Rechts von"
+
+#: AppRun:165
+msgid "Above"
+msgstr "Über"
+
+#: AppRun:166
+msgid "Below"
+msgstr "Unter"
+
+#: xrandr.py:165
+msgid "Errors from xrandr: '%s'"
+msgstr "Fahler von xrandr: '%s'"
