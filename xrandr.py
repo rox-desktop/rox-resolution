@@ -1,5 +1,4 @@
 import os, popen2, sys
-from collections import defaultdict
 import rox
 
 paths = os.environ.get('PATH', '/bin:/usr/bin').split(':')
