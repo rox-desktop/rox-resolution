@@ -97,9 +97,14 @@ def get_settings(xrandr_args):
 				# Invalid args: --output not followed by output name.
 				break
 		elif arg in {'--same-as', '--left-of', '--right-of', '--above', '--below'}:
-			settings[output].direction = arg[2:]
 			try:
-				settings[output].other_output = it.next()
+				output_settings = settings[output]
+			except KeyError:
+				# Configured output not connected.
+				continue
+			output_settings.direction = arg[2:]
+			try:
+				output_settings.other_output = it.next()
 			except StopIteration:
 				# Invalid args: direction not followed by output name.
 				break
