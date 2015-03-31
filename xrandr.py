@@ -123,7 +123,11 @@ def get_settings(xrandr_args):
 						settings[output].current = setting
 						break
 		elif arg == '--off':
-			settings[output].enabled = False
+			try:
+				settings[output].enabled = False
+			except KeyError:
+				# The output has been disconnected.
+				continue
 		elif arg == '--rate':
 			# This code relies on --mode being set before --rate,
 			# so settings[output].current is set to the setting currently
