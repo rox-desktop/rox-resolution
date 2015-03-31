@@ -161,7 +161,9 @@ class ResBox(rox.Dialog):
 					menu.append(item)
 					if settings.other_output is None:
 						settings.other_output = other_output
-				self.other_outputs[output].set_history(0)
+				self.other_outputs[output].set_history(
+					self.other_output_strings[output].index(settings.other_output)
+				)
 				self.other_outputs[output].connect("changed", self.other_output_selected,
 									   settings)
 
