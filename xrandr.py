@@ -111,6 +111,28 @@ def get_settings(xrandr_args):
 			except StopIteration:
 				# Invalid args: direction not followed by output name.
 				break
+		elif arg == '--mode':
+			try:
+				width, height = [int(s) for s in it.next().split('x')]
+			except (StopIteration, ValueError):
+				# Invalid args: --mode not followed by valid mode string.
+				break
+			else:
+				for setting in settings[output]:
+					if setting.width == width and setting.height == height:
+						settings[output].current = setting
+						break
+		elif arg == '--rate':
+			# This code relies on --mode being set before --rate,
+			# so settings[output].current is set to the setting currently
+			# saved.
+			try:
+				rate = float(it.next())
+			except (StopIteration, ValueError):
+				# Invalid args: --rate not followed by valid rate string.
+				break
+			else:
+				settings[output].current.current_r = rate
 	return settings
 
 def settings_to_args(output2settings):

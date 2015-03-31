@@ -26,6 +26,7 @@ class Field(g.HBox):
 		self.value.set_padding(2, 2)
 
 RESPONSE_REFRESH = 1000
+RESPONSE_REVERT = 1001
 
 other_direction = {0: 0, 1: 2, 2: 1, 3: 4, 4: 3}
 direction_strings = {
@@ -39,13 +40,24 @@ class ResBox(rox.Dialog):
 		self.add_button(g.STOCK_HELP, g.RESPONSE_HELP)
 		self.add_button(g.STOCK_CLOSE, g.RESPONSE_CANCEL)
 		self.add_button(g.STOCK_REFRESH, RESPONSE_REFRESH)
-		self.add_button(g.STOCK_APPLY, g.RESPONSE_OK)
-		self.set_default_response(g.RESPONSE_OK)
+		self.add_button(g.STOCK_REVERT_TO_SAVED, RESPONSE_REVERT)
+		self.add_button(g.STOCK_APPLY, g.RESPONSE_APPLY)
+		self.add_button(g.STOCK_SAVE, g.RESPONSE_OK)
+		self.set_default_response(g.RESPONSE_APPLY)
 		self.set_has_separator(False)
 		def resp(d, r):
 			if r == int(g.RESPONSE_HELP):
 				from rox import filer
 				filer.open_dir(os.path.join(rox.app_dir, 'Help'))
+			elif r == int(g.RESPONSE_APPLY):
+				xrandr.set_modes(self.settings)
+				self.hide()
+				self.present()
+			elif r == int(RESPONSE_REVERT):
+				self.destroy()
+				res_box = ResBox()
+				res_box.show()
+				xrandr.set_modes(res_box.settings)
 			elif r == int(g.RESPONSE_OK):
 				xrandr.set_modes(self.settings)
 				xrandr_setting._set(' '.join(xrandr.settings_to_args(self.settings)))
