@@ -140,9 +140,15 @@ class ResBox(rox.Dialog):
 			current = settings.current
 			if current is not None:
 				if current.current_r is not None:
-					i = current.res.index(current.current_r)
+					try:
+						i = current.res.index(current.current_r)
+					except ValueError:
+						pass
 				if current.preferred_r is not None:
-					i = current.res.index(current.preferred_r)
+					try:
+						i = current.res.index(current.preferred_r)
+					except ValueError:
+						pass
 			self.refresh_rates[output].set_history(i)
 
 			self.physical_size[output] = Field(_('Physical size: '), sg)
@@ -238,7 +244,8 @@ class ResBox(rox.Dialog):
 			item.show()
 		self.refresh_rates[settings.output].set_history(
 			current.res.index(current.current_r)
-			if current.current_r is not None else 0
+			if current.current_r is not None
+			and current.current_r in current.res else 0
 		)
 	
 
